@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AMA ProStock — Nigerian Inventory Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ======= PIN LOCK SCREEN ======= -->
+<div id="lockScreen" class="lock-screen">
+  <div class="lock-card">
+    <div class="lock-logo">
+      <span class="lock-icon">🔐</span>
+      <h1>AMA ProStock</h1>
+      <p>Nigerian Inventory Management System</p>
+    </div>
+    <div class="pin-display" id="pinDisplay">
+      <span class="pin-dot" id="d0"></span>
+      <span class="pin-dot" id="d1"></span>
+      <span class="pin-dot" id="d2"></span>
+      <span class="pin-dot" id="d3"></span>
+    </div>
+    <p class="pin-hint" id="pinHint">Enter your 4-digit PIN (default: 1234)</p>
+    <div class="pin-pad">
+      <button class="pin-btn" onclick="pinInput(1)">1</button>
+      <button class="pin-btn" onclick="pinInput(2)">2</button>
+      <button class="pin-btn" onclick="pinInput(3)">3</button>
+      <button class="pin-btn" onclick="pinInput(4)">4</button>
+      <button class="pin-btn" onclick="pinInput(5)">5</button>
+      <button class="pin-btn" onclick="pinInput(6)">6</button>
+      <button class="pin-btn" onclick="pinInput(7)">7</button>
+      <button class="pin-btn" onclick="pinInput(8)">8</button>
+      <button class="pin-btn" onclick="pinInput(9)">9</button>
+      <button class="pin-btn pin-clear" onclick="pinClear()">⌫</button>
+      <button class="pin-btn" onclick="pinInput(0)">0</button>
+      <button class="pin-btn pin-submit" onclick="pinSubmit()">✓</button>
+    </div>
+    <p class="lock-copy">Copyright © AMA Global Inc. All Rights Reserved.</p>
+  </div>
+</div>
+
+<!-- ======= MAIN APP ======= -->
+<div id="mainApp" class="app-wrapper hidden">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <div class="brand-icon">📦</div>
+        <div class="brand-text">
+          <span class="brand-name">AMA ProStock</span>
+          <span class="brand-sub">Inventory System</span>
+        </div>
+      </div>
+      <button class="sidebar-close" id="sidebarClose" onclick="toggleSidebar()">✕</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">MAIN MENU</div>
+      <a class="nav-link active" data-page="dashboard" onclick="navigate('dashboard')">
+        <span class="nav-icon">📊</span> Dashboard
+      </a>
+      <a class="nav-link" data-page="products" onclick="navigate('products')">
+        <span class="nav-icon">📦</span> Products
+      </a>
+      <a class="nav-link" data-page="sales" onclick="navigate('sales')">
+        <span class="nav-icon">🛒</span> Sales
+      </a>
+      <a class="nav-link" data-page="stock" onclick="navigate('stock')">
+        <span class="nav-icon">📋</span> Stock
+      </a>
+
+      <div class="nav-section-label">FINANCE</div>
+      <a class="nav-link" data-page="expenses" onclick="navigate('expenses')">
+        <span class="nav-icon">💸</span> Expenses
+      </a>
+      <a class="nav-link" data-page="investments" onclick="navigate('investments')">
+        <span class="nav-icon">💰</span> Capital
+      </a>
+      <a class="nav-link" data-page="profitloss" onclick="navigate('profitloss')">
+        <span class="nav-icon">📈</span> P&L Report
+      </a>
+
+      <div class="nav-section-label">SYSTEM</div>
+      <a class="nav-link" data-page="analytics" onclick="navigate('analytics')">
+        <span class="nav-icon">🔍</span> Analytics
+      </a>
+      <a class="nav-link" data-page="settings" onclick="navigate('settings')">
+        <span class="nav-icon">⚙️</span> Settings
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-lock" onclick="lockSystem()">🔒 Lock System</button>
+      <p class="sidebar-copy">© AMA Global Inc.</p>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content" id="mainContent">
+
+    <!-- TOP HEADER -->
+    <header class="top-header">
+      <div class="header-left">
+        <button class="hamburger" onclick="toggleSidebar()">☰</button>
+        <div class="page-title-wrap">
+          <h2 class="page-title" id="pageTitle">Dashboard</h2>
+          <p class="page-breadcrumb" id="pageBreadcrumb">Home / Dashboard</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="btn-theme" onclick="toggleTheme()" title="Toggle Theme">🌙</button>
+        <div class="header-search">
+          <input type="text" id="globalSearch" placeholder="Search products…" oninput="globalSearchHandler()" autocomplete="off" />
+          <div class="search-dropdown" id="searchDropdown"></div>
+        </div>
+        <div class="header-date" id="headerDate"></div>
+      </div>
+    </header>
+
+    <!-- PAGES -->
+
+    <!-- ===== DASHBOARD PAGE ===== -->
+    <section class="page active" id="page-dashboard">
+      <div class="stat-cards">
+        <div class="stat-card card-green">
+          <div class="stat-icon">📦</div>
+          <div class="stat-info">
+            <span class="stat-label">Total Products</span>
+            <span class="stat-value" id="statProducts">0</span>
+          </div>
+        </div>
+        <div class="stat-card card-blue">
+          <div class="stat-icon">📊</div>
+          <div class="stat-info">
+            <span class="stat-label">Total Stock</span>
+            <span class="stat-value" id="statStock">0</span>
+          </div>
+        </div>
+        <div class="stat-card card-amber">
+          <div class="stat-icon">💵</div>
+          <div class="stat-info">
+            <span class="stat-label">Stock Value</span>
+            <span class="stat-value" id="statStockValue">₦0</span>
+          </div>
+        </div>
+        <div class="stat-card card-purple">
+          <div class="stat-icon">🛒</div>
+          <div class="stat-info">
+            <span class="stat-label">Total Revenue</span>
+            <span class="stat-value" id="statRevenue">₦0</span>
+          </div>
+        </div>
+        <div class="stat-card card-green">
+          <div class="stat-icon">📈</div>
+          <div class="stat-info">
+            <span class="stat-label">Total Profit</span>
+            <span class="stat-value" id="statProfit">₦0</span>
+          </div>
+        </div>
+        <div class="stat-card card-red">
+          <div class="stat-icon">💸</div>
+          <div class="stat-info">
+            <span class="stat-label">Total Expenses</span>
+            <span class="stat-value" id="statExpenses">₦0</span>
+          </div>
+        </div>
+        <div class="stat-card card-blue">
+          <div class="stat-icon">💰</div>
+          <div class="stat-info">
+            <span class="stat-label">Current Capital</span>
+            <span class="stat-value" id="statCapital">₦0</span>
+          </div>
+        </div>
+        <div class="stat-card card-orange">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-info">
+            <span class="stat-label">Low Stock Items</span>
+            <span class="stat-value" id="statLowStock">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Monthly Sales & Profit</h3>
+          </div>
+          <canvas id="salesChart" height="220"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Expense Breakdown</h3>
+          </div>
+          <canvas id="expenseChart" height="220"></canvas>
+        </div>
+      </div>
+
+      <!-- Low Stock + Recent Sales -->
+      <div class="dashboard-bottom">
+        <div class="dash-table-card">
+          <div class="dash-table-header">
+            <h3>⚠️ Low Stock Alert</h3>
+            <span class="badge-red" id="lowStockBadge">0 items</span>
+          </div>
+          <table class="dash-table">
+            <thead>
+              <tr><th>Product</th><th>Category</th><th>Qty</th><th>Status</th></tr>
+            </thead>
+            <tbody id="lowStockTable"></tbody>
+          </table>
+        </div>
+        <div class="dash-table-card">
+          <div class="dash-table-header">
+            <h3>🛒 Recent Sales</h3>
+          </div>
+          <table class="dash-table">
+            <thead>
+              <tr><th>Product</th><th>Qty</th><th>Amount</th><th>Date</th></tr>
+            </thead>
+            <tbody id="recentSalesTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PRODUCTS PAGE ===== -->
+    <section class="page" id="page-products">
+      <div class="page-toolbar">
+        <div class="toolbar-left">
+          <input type="text" class="search-box" id="productSearch" placeholder="🔍 Search products…" oninput="filterProducts()" />
+          <select class="filter-select" id="categoryFilter" onchange="filterProducts()">
+            <option value="">All Categories</option>
+            <option>Rice</option><option>Beverages</option><option>Noodles</option>
+            <option>Spices</option><option>Cosmetics</option><option>Bread</option>
+            <option>Soft Drinks</option><option>Provisions</option><option>Dairy</option>
+            <option>Grains</option><option>Snacks</option><option>Household</option>
+          </select>
+        </div>
+        <div class="toolbar-right">
+          <button class="btn btn-export" onclick="exportProductsCSV()">⬇ Export CSV</button>
+          <button class="btn btn-primary" onclick="openModal('addProductModal')">+ Add Product</button>
+        </div>
+      </div>
+      <div class="table-card">
+        <table class="data-table" id="productsTable">
+          <thead>
+            <tr>
+              <th>ID</th><th>Product Name</th><th>Category</th><th>Cost ₦</th>
+              <th>Price ₦</th><th>Qty</th><th>Supplier</th><th>Status</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="productsTbody"></tbody>
+        </table>
+        <p class="empty-state" id="productsEmpty">No products found. Add your first product!</p>
+      </div>
+    </section>
+
+    <!-- ===== SALES PAGE ===== -->
+    <section class="page" id="page-sales">
+      <div class="page-toolbar">
+        <div class="toolbar-left">
+          <input type="text" class="search-box" id="salesSearch" placeholder="🔍 Search sales…" oninput="filterSales()" />
+          <input type="date" class="filter-select" id="salesDateFilter" onchange="filterSales()" />
+        </div>
+        <div class="toolbar-right">
+          <button class="btn btn-export" onclick="exportSalesCSV()">⬇ Export CSV</button>
+          <button class="btn btn-primary" onclick="openModal('addSaleModal')">+ Record Sale</button>
+        </div>
+      </div>
+      <div class="stat-cards mini">
+        <div class="stat-card card-blue"><div class="stat-icon">🛒</div><div class="stat-info"><span class="stat-label">Today's Sales</span><span class="stat-value" id="todaySales">₦0</span></div></div>
+        <div class="stat-card card-green"><div class="stat-icon">📈</div><div class="stat-info"><span class="stat-label">Today's Profit</span><span class="stat-value" id="todayProfit">₦0</span></div></div>
+        <div class="stat-card card-amber"><div class="stat-icon">📋</div><div class="stat-info"><span class="stat-label">Total Transactions</span><span class="stat-value" id="totalTxn">0</span></div></div>
+      </div>
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr><th>ID</th><th>Product</th><th>Qty</th><th>Unit Price</th><th>Revenue</th><th>Profit</th><th>Date</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="salesTbody"></tbody>
+        </table>
+        <p class="empty-state" id="salesEmpty">No sales recorded yet.</p>
+      </div>
+    </section>
+
+    <!-- ===== STOCK PAGE ===== -->
+    <section class="page" id="page-stock">
+      <div class="page-toolbar">
+        <div class="toolbar-left">
+          <h3 style="color:var(--text-primary)">Stock Movement History</h3>
+        </div>
+        <div class="toolbar-right">
+          <button class="btn btn-primary" onclick="openModal('stockModal')">+ Adjust Stock</button>
+        </div>
+      </div>
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr><th>Product</th><th>Action</th><th>Quantity</th><th>Before</th><th>After</th><th>Note</th><th>Date</th></tr>
+          </thead>
+          <tbody id="stockTbody"></tbody>
+        </table>
+        <p class="empty-state" id="stockEmpty">No stock movements recorded.</p>
+      </div>
+    </section>
+
+    <!-- ===== EXPENSES PAGE ===== -->
+    <section class="page" id="page-expenses">
+      <div class="page-toolbar">
+        <div class="toolbar-left">
+          <input type="text" class="search-box" id="expenseSearch" placeholder="🔍 Search expenses…" oninput="filterExpenses()" />
+          <select class="filter-select" id="expenseCatFilter" onchange="filterExpenses()">
+            <option value="">All Categories</option>
+            <option>Transport</option><option>Electricity</option><option>Shop Rent</option>
+            <option>Staff Salary</option><option>Food</option><option>Maintenance</option>
+            <option>Internet</option><option>POS Charges</option><option>Miscellaneous</option>
+          </select>
+        </div>
+        <div class="toolbar-right">
+          <button class="btn btn-export" onclick="exportExpensesCSV()">⬇ Export CSV</button>
+          <button class="btn btn-primary" onclick="openModal('addExpenseModal')">+ Add Expense</button>
+        </div>
+      </div>
+      <div class="stat-cards mini">
+        <div class="stat-card card-red"><div class="stat-icon">💸</div><div class="stat-info"><span class="stat-label">Total Expenses</span><span class="stat-value" id="totalExpStat">₦0</span></div></div>
+        <div class="stat-card card-amber"><div class="stat-icon">📅</div><div class="stat-info"><span class="stat-label">Today's Expenses</span><span class="stat-value" id="todayExpStat">₦0</span></div></div>
+        <div class="stat-card card-orange"><div class="stat-icon">📆</div><div class="stat-info"><span class="stat-label">Monthly Expenses</span><span class="stat-value" id="monthExpStat">₦0</span></div></div>
+      </div>
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr><th>ID</th><th>Title</th><th>Category</th><th>Amount</th><th>Description</th><th>Date</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="expensesTbody"></tbody>
+        </table>
+        <p class="empty-state" id="expensesEmpty">No expenses recorded yet.</p>
+      </div>
+    </section>
+
+    <!-- ===== INVESTMENTS / CAPITAL PAGE ===== -->
+    <section class="page" id="page-investments">
+      <div class="page-toolbar">
+        <div class="toolbar-left">
+          <h3 style="color:var(--text-primary)">Capital & Investment Tracker</h3>
+        </div>
+        <div class="toolbar-right">
+          <button class="btn btn-primary" onclick="openModal('addInvestmentModal')">+ Add Entry</button>
+        </div>
+      </div>
+      <div class="stat-cards mini">
+        <div class="stat-card card-green"><div class="stat-icon">💰</div><div class="stat-info"><span class="stat-label">Total Invested</span><span class="stat-value" id="totalInvested">₦0</span></div></div>
+        <div class="stat-card card-red"><div class="stat-icon">📤</div><div class="stat-info"><span class="stat-label">Total Withdrawn</span><span class="stat-value" id="totalWithdrawn">₦0</span></div></div>
+        <div class="stat-card card-blue"><div class="stat-icon">🏦</div><div class="stat-info"><span class="stat-label">Net Capital</span><span class="stat-value" id="netCapital">₦0</span></div></div>
+      </div>
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr><th>ID</th><th>Investor</th><th>Type</th><th>Amount</th><th>Notes</th><th>Date</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="investmentsTbody"></tbody>
+        </table>
+        <p class="empty-state" id="investmentsEmpty">No capital entries yet.</p>
+      </div>
+    </section>
+
+    <!-- ===== P&L REPORT PAGE ===== -->
+    <section class="page" id="page-profitloss">
+      <div class="pl-container">
+        <div class="pl-card pl-revenue">
+          <h3>📥 Total Revenue</h3>
+          <div class="pl-amount" id="plRevenue">₦0</div>
+        </div>
+        <div class="pl-card pl-cogs">
+          <h3>📦 Cost of Goods Sold</h3>
+          <div class="pl-amount" id="plCOGS">₦0</div>
+        </div>
+        <div class="pl-card pl-gross">
+          <h3>📊 Gross Profit</h3>
+          <div class="pl-amount" id="plGross">₦0</div>
+        </div>
+        <div class="pl-card pl-expense">
+          <h3>💸 Total Expenses</h3>
+          <div class="pl-amount" id="plExpenses">₦0</div>
+        </div>
+        <div class="pl-card pl-net" id="plNetCard">
+          <h3>💎 Net Profit / Loss</h3>
+          <div class="pl-amount" id="plNet">₦0</div>
+          <span class="pl-badge" id="plBadge">Calculating…</span>
+        </div>
+        <div class="pl-card pl-capital">
+          <h3>🏦 Remaining Capital</h3>
+          <div class="pl-amount" id="plCapital">₦0</div>
+        </div>
+      </div>
+
+      <div class="charts-row" style="margin-top:1.5rem">
+        <div class="chart-card">
+          <div class="chart-header"><h3>Revenue vs Expenses vs Profit</h3></div>
+          <canvas id="plChart" height="250"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header"><h3>Capital Breakdown</h3></div>
+          <canvas id="capitalChart" height="250"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ANALYTICS PAGE ===== -->
+    <section class="page" id="page-analytics">
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-header"><h3>Top Selling Products</h3></div>
+          <canvas id="topProductsChart" height="300"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header"><h3>Stock Level by Category</h3></div>
+          <canvas id="categoryStockChart" height="300"></canvas>
+        </div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-header"><h3>Monthly Revenue Trend</h3></div>
+          <canvas id="monthlyRevenueChart" height="250"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header"><h3>Expense Categories</h3></div>
+          <canvas id="expenseCategoryChart" height="250"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SETTINGS PAGE ===== -->
+    <section class="page" id="page-settings">
+      <div class="settings-grid">
+        <!-- Google Sheets Sync -->
+        <div class="settings-card">
+          <h3>🔗 Google Sheets CSV Sync</h3>
+          <p class="settings-desc">Connect your Google Sheets inventory as a read source.</p>
+          <input type="text" class="settings-input" id="sheetsURL" placeholder="Paste your Google Sheets CSV URL here…" />
+          <button class="btn btn-primary" onclick="syncGoogleSheets()">Sync Now</button>
+          <div class="settings-help">
+            <strong>How to get CSV URL:</strong><br>
+            1. Open Google Sheets → File → Share → Publish to web<br>
+            2. Select sheet → Choose "Comma-separated values (.csv)"<br>
+            3. Click Publish → Copy the link<br>
+            4. Paste above and click Sync Now
+          </div>
+        </div>
+
+        <!-- Change PIN -->
+        <div class="settings-card">
+          <h3>🔐 Change System PIN</h3>
+          <p class="settings-desc">Update the 4-digit access PIN for this system.</p>
+          <input type="password" class="settings-input" id="currentPin" placeholder="Current PIN" maxlength="4" />
+          <input type="password" class="settings-input" id="newPin" placeholder="New PIN (4 digits)" maxlength="4" />
+          <input type="password" class="settings-input" id="confirmPin" placeholder="Confirm New PIN" maxlength="4" />
+          <button class="btn btn-primary" onclick="changePin()">Update PIN</button>
+        </div>
+
+        <!-- Backup & Restore -->
+        <div class="settings-card">
+          <h3>💾 Backup & Restore</h3>
+          <p class="settings-desc">Export or import all your business data as JSON backup.</p>
+          <button class="btn btn-primary" onclick="exportBackup()">⬇ Export Backup (JSON)</button>
+          <label class="btn btn-export" style="cursor:pointer;margin-top:0.5rem">
+            ⬆ Import Backup
+            <input type="file" accept=".json" onchange="importBackup(event)" style="display:none" />
+          </label>
+        </div>
+
+        <!-- Reset System -->
+        <div class="settings-card danger-card">
+          <h3>⚠️ Reset System</h3>
+          <p class="settings-desc">Warning! These actions are irreversible and will delete data permanently.</p>
+          <button class="btn btn-danger" onclick="confirmReset('sales')">Reset Sales Data</button>
+          <button class="btn btn-danger" onclick="confirmReset('expenses')">Reset Expenses</button>
+          <button class="btn btn-danger" onclick="confirmReset('investments')">Reset Capital</button>
+          <button class="btn btn-danger" onclick="confirmReset('products')">Reset Products</button>
+          <button class="btn btn-danger full-reset" onclick="confirmReset('all')">🗑 Full System Reset</button>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /main-content -->
+</div><!-- /app-wrapper -->
+
+<!-- ========= MODALS ========= -->
+
+<!-- ADD PRODUCT -->
+<div class="modal-overlay" id="addProductModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="productModalTitle">Add New Product</h3>
+      <button class="modal-close" onclick="closeModal('addProductModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editProductId" />
+      <div class="form-row">
+        <div class="form-group">
+          <label>Product Name *</label>
+          <input type="text" id="pName" placeholder="e.g. Dangote Rice 5kg" />
+        </div>
+        <div class="form-group">
+          <label>Category *</label>
+          <select id="pCategory">
+            <option>Rice</option><option>Beverages</option><option>Noodles</option>
+            <option>Spices</option><option>Cosmetics</option><option>Bread</option>
+            <option>Soft Drinks</option><option>Provisions</option><option>Dairy</option>
+            <option>Grains</option><option>Snacks</option><option>Household</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Cost Price (₦) *</label>
+          <input type="number" id="pCostPrice" placeholder="0.00" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Selling Price (₦) *</label>
+          <input type="number" id="pSellPrice" placeholder="0.00" min="0" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Quantity *</label>
+          <input type="number" id="pQty" placeholder="0" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Supplier</label>
+          <input type="text" id="pSupplier" placeholder="e.g. Alhaji Musa Stores" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addProductModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD SALE -->
+<div class="modal-overlay" id="addSaleModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Record New Sale</h3>
+      <button class="modal-close" onclick="closeModal('addSaleModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Select Product *</label>
+        <select id="saleProduct" onchange="fillSalePrice()">
+          <option value="">-- Select Product --</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Quantity Sold *</label>
+          <input type="number" id="saleQty" placeholder="0" min="1" oninput="calcSaleTotal()" />
+        </div>
+        <div class="form-group">
+          <label>Unit Price (₦)</label>
+          <input type="number" id="salePrice" placeholder="0.00" oninput="calcSaleTotal()" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Sale Total Preview</label>
+        <div class="sale-preview" id="salePreview">₦0.00 | Profit: ₦0.00</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addSaleModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="recordSale()">Confirm Sale</button>
+    </div>
+  </div>
+</div>
+
+<!-- STOCK ADJUSTMENT -->
+<div class="modal-overlay" id="stockModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Adjust Stock</h3>
+      <button class="modal-close" onclick="closeModal('stockModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Select Product *</label>
+        <select id="stockProduct"><option value="">-- Select Product --</option></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Action *</label>
+          <select id="stockAction">
+            <option value="add">Increase Stock (+)</option>
+            <option value="reduce">Reduce Stock (-)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Quantity *</label>
+          <input type="number" id="stockQty" placeholder="0" min="1" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Note</label>
+        <input type="text" id="stockNote" placeholder="e.g. New delivery from supplier" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('stockModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="adjustStock()">Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD EXPENSE -->
+<div class="modal-overlay" id="addExpenseModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="expenseModalTitle">Add Expense</h3>
+      <button class="modal-close" onclick="closeModal('addExpenseModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editExpenseId" />
+      <div class="form-row">
+        <div class="form-group">
+          <label>Expense Title *</label>
+          <input type="text" id="expTitle" placeholder="e.g. Generator Fuel" />
+        </div>
+        <div class="form-group">
+          <label>Category *</label>
+          <select id="expCategory">
+            <option>Transport</option><option>Electricity</option><option>Shop Rent</option>
+            <option>Staff Salary</option><option>Food</option><option>Maintenance</option>
+            <option>Internet</option><option>POS Charges</option><option>Miscellaneous</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Amount (₦) *</label>
+          <input type="number" id="expAmount" placeholder="0.00" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Date *</label>
+          <input type="date" id="expDate" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="expDesc" placeholder="Optional notes…" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addExpenseModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveExpense()">Save Expense</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD INVESTMENT -->
+<div class="modal-overlay" id="addInvestmentModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add Capital Entry</h3>
+      <button class="modal-close" onclick="closeModal('addInvestmentModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Investor / Source *</label>
+          <input type="text" id="invInvestor" placeholder="e.g. Owner / Partner" />
+        </div>
+        <div class="form-group">
+          <label>Type *</label>
+          <select id="invType">
+            <option>Initial Capital</option>
+            <option>Additional Investment</option>
+            <option>Withdrawal</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Amount (₦) *</label>
+          <input type="number" id="invAmount" placeholder="0.00" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Date *</label>
+          <input type="date" id="invDate" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Notes</label>
+        <input type="text" id="invNotes" placeholder="Optional notes…" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addInvestmentModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveInvestment()">Save Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM RESET MODAL -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h3 style="color:#ef4444">⚠️ Confirm Reset</h3>
+      <button class="modal-close" onclick="closeModal('resetModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="resetMessage" style="margin-bottom:1rem;color:var(--text-secondary)"></p>
+      <div class="form-group">
+        <label>Enter Admin PIN to confirm *</label>
+        <input type="password" id="resetPin" maxlength="4" placeholder="Enter PIN" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('resetModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="executeReset()">Confirm Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- OVERLAY for sidebar mobile -->
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- FOOTER -->
+<footer class="app-footer">
+  Copyright © AMA Global Inc. All Rights Reserved.
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
